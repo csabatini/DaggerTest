@@ -3,10 +3,10 @@ package com.csab.daggertest.dagger;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
 
-import com.squareup.otto.Bus;
+import java.util.Arrays;
+import java.util.List;
 
-import javax.inject.Inject;
-
+import dagger.ObjectGraph;
 import rx.Observable;
 import rx.android.app.AppObservable;
 import rx.android.lifecycle.LifecycleEvent;
@@ -15,15 +15,16 @@ import rx.subjects.BehaviorSubject;
 
 public abstract class TestBaseActivity extends ActionBarActivity {
 
-    @Inject
-    public Bus mBus;
-
     private final BehaviorSubject<LifecycleEvent> lifecycleSubject = BehaviorSubject.create();
+    private ObjectGraph activityGraph;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        ((TestApplication) getApplication()).inject(this);
+        TestApplication application = (TestApplication) getApplication();
+        activityGraph = application.getApplicationGraph().plus(getModules().toArray());
+        activityGraph.inject(this);
+
         lifecycleSubject.onNext(LifecycleEvent.CREATE);
     }
 
@@ -37,14 +38,12 @@ public abstract class TestBaseActivity extends ActionBarActivity {
     public void onResume() {
         super.onResume();
         lifecycleSubject.onNext(LifecycleEvent.RESUME);
-        mBus.register(this);
     }
 
     @Override
     public void onPause() {
         super.onPause();
         lifecycleSubject.onNext(LifecycleEvent.PAUSE);
-        mBus.unregister(this);
     }
 
     @Override
@@ -57,6 +56,11 @@ public abstract class TestBaseActivity extends ActionBarActivity {
     public void onDestroy() {
         super.onDestroy();
         lifecycleSubject.onNext(LifecycleEvent.DESTROY);
+        activityGraph = null;
+    }
+
+    protected List<Object> getModules() {
+        return Arrays.<Object>asList(new ActivityModule(this));
     }
 
     protected <T> Observable<T> bind(Observable<T> observable) {

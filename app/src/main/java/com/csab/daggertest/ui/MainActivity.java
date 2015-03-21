@@ -7,7 +7,7 @@ import android.widget.TextView;
 
 import com.csab.daggertest.R;
 import com.csab.daggertest.dagger.TestBaseActivity;
-import com.csab.daggertest.data.Api;
+import com.csab.daggertest.data.Repository;
 import com.csab.daggertest.model.NameResponse;
 import com.google.gson.Gson;
 
@@ -19,9 +19,7 @@ import rx.Subscriber;
 public class MainActivity extends TestBaseActivity {
 
     @Inject
-    public Api mApi;
-    @Inject
-    public Gson mGson;
+    public Repository mRepo;
 
     private TextView mTextView;
 
@@ -35,7 +33,7 @@ public class MainActivity extends TestBaseActivity {
     @Override
     public void onResume() {
         super.onResume();
-        bind(mApi.names()).subscribe(
+        bind(mRepo.getNames()).subscribe(
                 new Subscriber<NameResponse>() {
                     @Override
                     public void onCompleted() { }
@@ -45,7 +43,7 @@ public class MainActivity extends TestBaseActivity {
 
                     @Override
                     public void onNext(NameResponse response) {
-                        mTextView.setText(mGson.toJson(response, NameResponse.class));
+                        mTextView.setText(new Gson().toJson(response, NameResponse.class));
                     }
                 });
     }

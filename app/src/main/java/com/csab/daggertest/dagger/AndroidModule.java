@@ -4,8 +4,7 @@ import android.content.Context;
 import android.net.wifi.WifiManager;
 
 import com.csab.daggertest.data.Api;
-import com.google.gson.Gson;
-import com.squareup.otto.Bus;
+import com.path.android.jobqueue.JobManager;
 
 import javax.inject.Singleton;
 
@@ -15,7 +14,8 @@ import retrofit.RestAdapter;
 
 @Module(library = true)
 public class AndroidModule {
-    private TestApplication application;
+
+    private final TestApplication application;
 
     public AndroidModule(TestApplication application) {
         this.application = application;
@@ -30,34 +30,22 @@ public class AndroidModule {
 
     @Provides
     @Singleton
-    WifiManager providesWifiManager() {
+    WifiManager provideWifiManager() {
         return (WifiManager) application.getSystemService(Context.WIFI_SERVICE);
     }
 
     @Provides
     @Singleton
-    RestAdapter provideRestAdapter() {
-        return new RestAdapter.Builder()
+    JobManager provideJobManager() {
+        return new JobManager(application);
+    }
+
+    @Provides
+    @Singleton
+    Api provideApi() {
+        final RestAdapter restAdapter = new RestAdapter.Builder()
                 .setEndpoint("http://45.55.154.121/api/")
                 .build();
-    }
-
-    @Provides
-    @Singleton
-    Api provideApi(RestAdapter restAdapter) {
         return restAdapter.create(Api.class);
     }
-
-    @Provides
-    @Singleton
-    Bus providesBus() {
-        return new Bus();
-    }
-
-    @Provides
-    @Singleton
-    Gson provideGson() {
-        return new Gson();
-    }
-
 }

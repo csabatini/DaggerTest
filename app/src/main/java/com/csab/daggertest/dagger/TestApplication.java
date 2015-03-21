@@ -9,21 +9,20 @@ import dagger.ObjectGraph;
 
 public class TestApplication extends Application {
 
-    private ObjectGraph objectGraph;
+    private ObjectGraph applicationGraph;
 
     @Override
     public void onCreate() {
         super.onCreate();
-        objectGraph = ObjectGraph.create(getModules().toArray());
+        applicationGraph = ObjectGraph.create(getModules().toArray());
     }
 
     protected List<Object> getModules() {
         return Arrays.<Object>asList(
-                new AndroidModule(this),
-                new TestModule());
+                new AndroidModule(this));
     }
 
-    public void inject(Object object) {
-        objectGraph.inject(object);
+    ObjectGraph getApplicationGraph() {
+        return applicationGraph;
     }
 }
